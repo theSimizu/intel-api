@@ -3,8 +3,9 @@ import fs from 'fs'
 import JSONStream from 'JSONStream'
 import {Builder, By, until} from 'selenium-webdriver'
 import chrome from 'selenium-webdriver/chrome.js'
+import IntelProcessor from './models/intel_processor.js'
 
-const option = new chrome.Options().addArguments('--headless','--proxy-server=socks5://127.0.0.1:9050')//.headless()
+const option = new chrome.Options().addArguments(/*'--headless',*/'--proxy-server=socks5://127.0.0.1:9050')//.headless()
 
 class Scrapper {
 
@@ -55,6 +56,7 @@ class Scrapper {
 
 		for await(const [index, links] of (await Promise.all(urls)).entries()) {
 			const serie = Object.keys(panels)[index]
+
 			jsonStreamWriter.write([serie, await Promise.all(links)])
 		}
 		
@@ -63,7 +65,7 @@ class Scrapper {
 	}
 
 	static processors() {
-		const file = fs.readFileSync('./processors.json')
+		const file = fs.readFileSync('./src/cpus_data/processors.json')
 		return JSON.parse(file)
 	}
 
@@ -152,18 +154,25 @@ class Scrapper {
 				.map(el => this._extractText(el))
 
 				for (let cpu of cpus) {
+
+					
 					const processor = {"Model": cpu['name']}
 					const id = cpu['id']
 					const values = await this.driver.findElements(By.css(`table.table tbody tr td span[data-product-id='${id}']`))
 
-					for (const [i, key] of processorsAttributes.entries()) {
+					for await (const [i, key] of processorsAttributes.entries()) {
 						const value = await this._extractText(values[i])
 
 						if (value != '' && value != ' ') {
-							processor[await key] = value 
+							processor[await key] = value
 						}
 
+
+
 					}
+
+
+					
 					this.transformStream.write(processor)
 				
 				}
