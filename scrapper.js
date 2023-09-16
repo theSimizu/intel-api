@@ -1,11 +1,15 @@
-import * as _ from 'chromedriver'
 import fs from 'fs'
+import process from 'process'
 import JSONStream from 'JSONStream'
-import {Builder, By, until} from 'selenium-webdriver'
 import chrome from 'selenium-webdriver/chrome.js'
 import IntelProcessor from './models/intel_processor.js'
+import {Builder, By, until} from 'selenium-webdriver'
+import 'dotenv/config'
+import * as _ from 'chromedriver'
 
-const option = new chrome.Options().addArguments('--headless','--proxy-server=socks5://127.0.0.1:9050')//.headless()
+
+
+const option = new chrome.Options().addArguments('--headless',process.env.proxy)
 
 class Scrapper {
 
@@ -80,7 +84,9 @@ class Scrapper {
 
 	async _clickInElementLocated(locator) {
 		await new Promise(r => setTimeout(r, 1500)) 
-		await this.driver.wait(until.elementLocated(locator), 2500).then(async element => await element.click()).catch(() => {return})
+		await this.driver.wait(until.elementLocated(locator), 2500)
+						 .then(async element => await element.click())
+						 .catch(() => {return})
 	}
 	
 	async _extractText(element) {
@@ -93,7 +99,6 @@ class Scrapper {
 	}
 	
 	async start() {
-
 		try {
 			const selecteds = []
 			const maxCpus = 199
@@ -152,8 +157,13 @@ class Scrapper {
 		
 				const processorsAttributes = (await this.driver.findElements(By.css('div.col-xs-12.table-responsive.hidden-lg.hidden-bg tbody tr td.row-title.sticky-column div.row-text')))
 				.map(el => this._extractText(el))
+				
 				for (let cpu of cpus) {
 					const processor = {"Model": cpu['name']}
+					processor['indexModel'] = cpu['name'].replace(/[^a-zA-Z0-9]/g, '')
+														 .replace('Intel', '')
+														 .replace('Processor', '')
+														 .toUpperCase()
 					const id = cpu['id']
 					const values = await this.driver.findElements(By.css(`table.table tbody tr td span[data-product-id='${id}']`))
 
@@ -162,6 +172,15 @@ class Scrapper {
 
 						if (value != '' && value != ' ') {
 							processor[await key] = value
+
+							if (await key === 'Processor Number') {
+								processor['indexNumber'] = value
+														   .replace(/[^a-zA-Z0-9]/g, '')
+														   .toUpperCase()
+							}
+
+
+							
 						}
 
 					}

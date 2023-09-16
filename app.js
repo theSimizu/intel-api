@@ -1,28 +1,29 @@
-import express from 'express'
-import cookieParser from 'cookie-parser'
+import helmet from "helmet"
 import logger from 'morgan'
-import indexRouter from './routes/index.js'
-import usersRouter from './routes/users.js'
+import process from 'process'
+import express from 'express'
+import compression from 'compression'
+import cookieParser from 'cookie-parser'
+import indexRouter from './routes/intel.js'
 
-var app = express();
+const port =  process.argv[2] || 3000
 
-// view engine setup
-app.set('views', './views');
-app.set('view engine', 'jade');
+var app = express()
 
-app.use(logger('dev'));
-app.use(express.json());
-app.use(express.urlencoded({ extended: false }));
-app.use(cookieParser());
-app.use(express.static('./public'));
+// View engine setup
+app.set('views', './views')
+app.set('view engine', 'jade')
 
-app.use('/', indexRouter);
-app.use('/users', usersRouter);
+// Middlewares
+app.use(helmet())
+app.use(logger('dev'))
+app.use(express.json())
+app.use(cookieParser())
+app.use(express.static('./public'))
+app.use(express.urlencoded({ extended: false }))
+app.use(compression())
 
+// Routers
+app.use('/intel', indexRouter);
 
-
-
-app.listen(6969, () => console.log('Listening'))
-
-
-export default app
+app.listen(port, () => console.log('Listening'))
