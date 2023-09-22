@@ -1,6 +1,8 @@
-import mongoose from '../config/database.js'
+import '../config/database_mongo.js'
+import mongoose from 'mongoose'
 
-const intelProcessorsSchema = mongoose.Schema({
+
+const intelProcessorsSchema = new mongoose.Schema({
     "Model": {
         type: String,
         unique: true

@@ -10,8 +10,10 @@ router.get('/number/:id', async (req, res) => {
                             .replace('Processor', '')
                             .toUpperCase()
 
+
     const processor = await IntelProcessor.findOne({'indexNumber': id})
                                           .select(removeSelected)
+
 
     res.json(processor)
 })
