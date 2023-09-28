@@ -26,4 +26,4 @@ app.use(compression())
 // Routers
 app.use('/intel', indexRouter);
 
-app.listen(port, () => console.log('Listening'))
+app.listen(port, () => console.log(`Listening on port ${port}`))

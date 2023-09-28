@@ -1,5 +1,6 @@
 import express from 'express'
 import IntelProcessor from '../models/intel_processor.js'
+import JSONStream from 'JSONStream'
 
 const router = express.Router();
 const removeSelected = '-_id -__v -indexModel -indexNumber'
@@ -19,10 +20,13 @@ router.get('/number/:id', async (req, res) => {
 })
 
 router.get('/all', async (req, res) => {
-    const processors = await IntelProcessor.find({})
-                                           .select(removeSelected)
+    res.set('Content-Type', 'application/json')
+    await IntelProcessor.find({})
+                        .select(removeSelected)
+                        .cursor()
+                        .pipe(JSONStream.stringify())
+                        .pipe(res.type('json'))
 
-    res.json(processors)
 })
 
 export default router
